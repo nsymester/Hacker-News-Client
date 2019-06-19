@@ -1,4 +1,4 @@
-# Hackernews Client
+# Hacker News Client
 
 ## Step 1: Install the project
 
