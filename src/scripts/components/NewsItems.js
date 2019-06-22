@@ -1,6 +1,73 @@
-import { ViewComments } from './ViewComments';
+import { LoadComments } from './NewsComments';
+import { getJSON } from './utils';
 
 let loadedComments = [];
+
+function GetNewsIds(url) {
+  getJSON(url)
+    .then(function(response) {
+      // returns a JSON structure so no need to conver it
+      buildUI(response);
+    })
+    .catch(function(e) {
+      throw Error('Search Request Error');
+    });
+}
+
+function GetMoreNewsItems(cb) {
+  cb();
+}
+
+function buildUI(newsItems) {
+  // build the news component for the first 10 itemss
+  for (let i = 0; i < 10; i = i + 1) {
+    // console.log(newsItems[i]);
+    getJSON(`https://hacker-news.firebaseio.com/v0/item/${newsItems[i]}.json`)
+      .then(function(response) {
+        // returns a JSON structure so no need to conver it
+        appendNewsToUI(response);
+      })
+      .catch(function(e) {
+        throw Error('Search Request Error');
+      });
+  }
+}
+
+function appendNewsToUI(newsItem) {
+  const newsItemsElem = document.querySelector('.newsItems');
+
+  // calculate date difference
+  var dateFromAPI = newsItem.time;
+
+  var now = new Date();
+  var datefromAPITimeStamp = new Date(dateFromAPI * 1000).getTime();
+  var nowTimeStamp = now.getTime();
+
+  var microSecondsDiff = Math.abs(datefromAPITimeStamp - nowTimeStamp);
+  // Number of milliseconds per day =
+  //   24 hrs/day * 60 minutes/hour * 60 seconds/minute * 1000 msecs/second
+  var hoursDiff = Math.floor(microSecondsDiff / (1000 * 60 * 60));
+
+  let comments = newsItem.kids != null ? newsItem.kids.length : 0;
+
+  let newsItemContent = `
+  <li class="moreBox blogBox">
+    <h4>${newsItem.title} <small>(${newsItem.by})</small></h4>
+    <p><span>${
+      newsItem.score
+    } points by (viewer) ${hoursDiff} hours ago</span> <a class="accordion" data-comments="${
+    newsItem.kids
+  }">${comments} comments</a></p>
+    <div class="panel">
+
+    </div>
+  </li>
+  `;
+  newsItemsElem.innerHTML += newsItemContent;
+  // console.log(newsItem);
+  LoadComments();
+  LoadMoreNewsItems();
+}
 
 function LoadMoreNewsItems() {
   // hide all news items
@@ -48,26 +115,6 @@ function LoadMoreNewsItems() {
   });
 }
 
-function GetNewsIds(url, cb) {
-  load(url, cb);
-}
-
-function GetNewsItem(url, cb) {
-  load(url, cb);
-}
-
-function GetComments(commentId, url, cb, commentContainer) {
-  console.log(commentContainer.parentNode.nextElementSibling);
-  if (!loadedComments.includes(commentId)) {
-    loadedComments.push(commentId);
-    load(url.replace('url', commentId), function(element) {
-      commentContainer.parentNode.nextElementSibling.innerHTML +=
-        commentId + ' >> ' + element.text;
-    });
-  }
-  cb();
-}
-
 function load(url, cb) {
   const request = new XMLHttpRequest();
 
@@ -91,64 +138,10 @@ function load(url, cb) {
   request.send();
 }
 
-function GetMoreNewsItems(cb) {
-  cb();
-}
-
-function buildUI(newsItems) {
-  // console.log(newsItems.length);
-  // build the news component for the first 10 itemss
-  for (let i = 0; i < 10; i = i + 1) {
-    // console.log(newsItems[i]);
-    GetNewsItem(
-      `https://hacker-news.firebaseio.com/v0/item/${newsItems[i]}.json`,
-      appendNewsToUI
-    );
-  }
-}
-
-function appendNewsToUI(newsItem) {
-  const newsItemsElem = document.querySelector('.newsItems');
-
-  // calculate date difference
-  var dateFromAPI = newsItem.time;
-
-  var now = new Date();
-  var datefromAPITimeStamp = new Date(dateFromAPI * 1000).getTime();
-  var nowTimeStamp = now.getTime();
-
-  var microSecondsDiff = Math.abs(datefromAPITimeStamp - nowTimeStamp);
-  // Number of milliseconds per day =
-  //   24 hrs/day * 60 minutes/hour * 60 seconds/minute * 1000 msecs/second
-  var hoursDiff = Math.floor(microSecondsDiff / (1000 * 60 * 60));
-
-  let comments = newsItem.kids != null ? newsItem.kids.length : 0;
-
-  let newsItemContent = `
-  <li class="moreBox blogBox">
-    <h4>${newsItem.title} <small>(${newsItem.by})</small></h4>
-    <p><span>${
-      newsItem.score
-    } points by (viewer) ${hoursDiff} hours ago</span> <a class="accordion" data-comments="${
-    newsItem.kids
-  }">${comments} comments</a></p>
-    <div class="panel">
-
-    </div>
-  </li>
-  `;
-  newsItemsElem.innerHTML += newsItemContent;
-  // console.log(newsItem);
-  // ViewComments();
-  LoadMoreNewsItems();
-}
-
 export {
   GetNewsIds,
   LoadMoreNewsItems,
-  GetNewsItem,
   GetMoreNewsItems,
-  GetComments,
   buildUI,
   appendNewsToUI
 };

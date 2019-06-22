@@ -35,9 +35,10 @@ function js(cb) {
       bundler = $.browserify({
         entries: entry, // Entry point
         debug: true // Output sourcemaps
-      }).transform($.babelify, {
-        presets: ['@babel/preset-env']
-      });
+      }).transform($.babelify.configure());
+      // .transform($.babelify, {
+      //   presets: ['@babel/preset-env']
+      // });
     } else {
       bundler = $.browserify({
         entries: entry, // Entry point

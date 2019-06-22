@@ -19,7 +19,6 @@
     "@babel/core": "^7.4.5",
     "@babel/preset-env": "^7.4.5",
     "autoprefixer": "^9.6.0",
-    "babel-preset-env": "^1.7.0",
     "babelify": "^10.0.0",
     "browser-sync": "^2.26.7",
     "browserify": "^16.2.3",
@@ -41,8 +40,5 @@
     "vinyl-source-stream": "^2.0.0",
     "watchify": "^3.11.1"
   },
-  "browserslist": [
-    "last 1 version",
-    "> 1%"
-  ]
+  "browserslist": "ie >= 10"
 }
